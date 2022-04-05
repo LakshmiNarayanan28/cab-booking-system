@@ -26,14 +26,14 @@ public interface CarBookRepository extends JpaRepository<BookingEntity,Integer> 
 	@Query(value="SELECT * FROM `cab-book-db`.`employee` WHERE eid =:empId", nativeQuery=true)
 	EmployeeProjection getEmployeeDetails(@Param("empId") int empId);
 	
-	@Query(value = "SELECT COUNT(*) FROM `booking_car` WHERE STATUS =:activeId AND emp_label=:frontCons", nativeQuery= true)
-	Integer getAllocatedCountofFront(@Param("activeId") int activeId, @Param("frontCons") String frontCons);
+	@Query(value = "SELECT COUNT(*) FROM `booking_car` WHERE STATUS =:activeId AND emp_label=:frontCons AND car_id=:carId", nativeQuery= true)
+	Integer getAllocatedCountofFront(@Param("activeId") int activeId, @Param("frontCons") String frontCons,@Param("carId") int carId);
 	
 	
-	@Query(value = "SELECT COUNT(*) FROM `booking_car` WHERE STATUS =:activeId AND emp_label=:backCons", nativeQuery= true)
-	Integer getAllocatedCountofBack(@Param("activeId") int activeId, @Param("backCons") String frontCons);
+	@Query(value = "SELECT COUNT(*) FROM `booking_car` WHERE STATUS =:activeId AND emp_label=:backCons AND car_id=:carId", nativeQuery= true)
+	Integer getAllocatedCountofBack(@Param("activeId") int activeId, @Param("backCons") String backCons,@Param("carId") int carId);
 	
 	
-	@Query(value="SELECT bc.emp_id FROM `cab-book-db`.`booking_car` bc INNER JOIN `cab-book-db`.`employee` em ON bc.`emp_id` = em.`eid` WHERE emp_id=:empId", nativeQuery= true)
-	Integer getAlreadyAllocatedOrNot(@Param("empId") int empId);
+	@Query(value="SELECT bc.emp_id FROM `cab-book-db`.`booking_car` bc INNER JOIN `cab-book-db`.`employee` em ON bc.`emp_id` = em.`eid` WHERE emp_id=:empId AND bc.status=:activeId", nativeQuery= true)
+	Integer getAlreadyAllocatedOrNot(@Param("empId") int empId,@Param("activeId") int activeId);
 }
