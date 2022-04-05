@@ -22,9 +22,9 @@ public class CarBookService {
 		String backCons = CarBookingConstant.BACKEND;
 		bookingEntity.setEmpId(empId);
 		bookingEntity.setCarId(carId);
-		Integer AlreadyAllocEmpOrNot = carBookRepository.getAlreadyAllocatedOrNot(empId);
-		if(AlreadyAllocEmpOrNot == empId) {
-			throw new CbException("Associates are already booked this particular car. So booking not possible");
+		Integer AlreadyAllocEmpOrNot = carBookRepository.getAlreadyAllocatedOrNot(empId,activeId);
+		if(AlreadyAllocEmpOrNot != null && AlreadyAllocEmpOrNot == empId) {
+			throw new CbException("Associates are already booked the car. So booking not possible");
 		}
 		Integer checkAvailability = carBookRepository.getCheckAvailabiltyOfCab(carId);
 		if (checkAvailability > 0 && checkAvailability <= 4) {
@@ -32,16 +32,20 @@ public class CarBookService {
 			EmployeeProjection getEmployeeDetails = carBookRepository.getEmployeeDetails(empId);
 			System.out.println(getEmployeeDetails.getEmployee_Name() + "" + getEmployeeDetails.getEmployee_Role());
 			if (getEmployeeDetails.getEmployee_Role().equalsIgnoreCase(CarBookingConstant.FRONTEND)) {
-				Integer getFCount = carBookRepository.getAllocatedCountofFront(activeId, frontCons);
+				Integer getFCount = carBookRepository.getAllocatedCountofFront(activeId, frontCons,carId);
+				Integer getBbCounts = carBookRepository.getAllocatedCountofBack(activeId, backCons,carId);
+				if(getFCount == 0 && getBbCounts == 3) {
+					throw new CbException("No Seats for Front Associates");
+				}
 				if (getFCount == 0) {
 					bookingEntity.setEmpLabel(getEmployeeDetails.getEmployee_Role());
 					bookingEntity.setStatus(1);
 					bookingEntity.setAvailableCapacity(checkAvailability);
 				} else {
-					Integer getFfCount = carBookRepository.getAllocatedCountofFront(activeId, frontCons);
-					Integer getBbCount = carBookRepository.getAllocatedCountofBack(activeId, backCons);
+					Integer getFfCount = carBookRepository.getAllocatedCountofFront(activeId, frontCons,carId);
+					Integer getBbCount = carBookRepository.getAllocatedCountofBack(activeId, backCons,carId);
 					if (getFfCount == 2 && getBbCount == 1) {
-						throw new CbException("No Seats for Backend Associates");
+						throw new CbException("No Seats for Frontend Associates");
 					} else if (getFfCount == 1 || getFfCount >= 2) {
 						bookingEntity.setEmpLabel(getEmployeeDetails.getEmployee_Role());
 						bookingEntity.setStatus(1);
@@ -49,14 +53,18 @@ public class CarBookService {
 					}
 				}
 			} else {
-				Integer getBCount = carBookRepository.getAllocatedCountofBack(activeId, backCons);
+				Integer getBCount = carBookRepository.getAllocatedCountofBack(activeId, backCons,carId);
+				Integer getFfCounts = carBookRepository.getAllocatedCountofFront(activeId, frontCons,carId);
+				if(getFfCounts == 3 && getBCount == 0) {
+					throw new CbException("No Seats for Back Associates");
+				}
 				if (getBCount == 0) {
 					bookingEntity.setEmpLabel(getEmployeeDetails.getEmployee_Role());
 					bookingEntity.setStatus(1);
 					bookingEntity.setAvailableCapacity(checkAvailability);
 				} else {
-					Integer getBbCount = carBookRepository.getAllocatedCountofBack(activeId, backCons);
-					Integer getFfCount = carBookRepository.getAllocatedCountofFront(activeId, frontCons);
+					Integer getBbCount = carBookRepository.getAllocatedCountofBack(activeId, backCons,carId);
+					Integer getFfCount = carBookRepository.getAllocatedCountofFront(activeId, frontCons,carId);
 					if (getFfCount == 1 && getBbCount == 2) {
 						throw new CbException("No Seats for Backend Associates");
 					} else if (getBbCount == 1 || getBbCount >= 2) {
